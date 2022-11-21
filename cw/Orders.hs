@@ -1,4 +1,8 @@
 module Orders where
+import Data.Map (fromListWith, toList)
+import Data.List
+import Data.List (group, sort)
+import Control.Arrow ((&&&))
 
 type Customer = String
 type Product = String
@@ -15,9 +19,20 @@ data Delivery = Delivery Product Double
 -- products each of them ordered.
 numProducts :: [Order] -> [(Customer, Int)]
 numProducts [] = []
-numProducts ((Order cs pro dou):xs) = [(cs, round dou)] ++ (numProducts xs)
+numProducts orders = countOccurences (filterCustomers (nub (zip (map getCustomerName orders) (map getProduct orders))))
 
 
+filterCustomers :: [(Customer, Product)] -> [Customer]
+filterCustomers lst = [fst x | x <- lst]
+
+getCustomerName :: Order -> Customer
+getCustomerName (Order name _ _ ) = name
+
+getProduct :: Order -> Product
+getProduct (Order _ product _  ) = product
+
+countOccurences :: [Customer] -> [(Customer, Int)]
+countOccurences = map (head &&& length) . group . sort
 
 -- All products that have been ordered, with the total quantity of each.
 productQuantities :: [Order] -> [(Product, Double)]
