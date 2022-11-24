@@ -1,8 +1,8 @@
 module Orders where
-import Data.Map (fromListWith, toList)
 import Data.List
 import Data.List (group, sort)
 import Control.Arrow ((&&&))
+import Data.List (partition)
 
 type Customer = String
 type Product = String
@@ -46,7 +46,29 @@ majority orders = undefined
 -- Products for which the total quantity ordered exceeds the
 -- total quantity delivered, with the difference in quantity.
 shortfall :: [Order] -> [Delivery] -> [(Product, Double)]
-shortfall orders deliveries = undefined
+shortfall [][] = []
+shortfall orders deliveries =   subQuantity (sumByQuantity (zip (map getProduct orders) (map getQuantity orders))) (sumByQuantity (zip (map getProductDelivery deliveries) (map getQuantityDelivery deliveries)))
+
+subQuantity :: [(Product, Double)] -> [(Product, Double)] -> [(Product, Double)]
+subQuantity [][] = []
+subQuantity ((x, y):xs) ((u, v):ys) = if (x == u) && (y-v>0) then [(x, y-v)] ++ subQuantity xs ys else []
+
+getQuantity :: Order -> Double
+getQuantity (Order _ _ quantity  ) = quantity
+
+getProductDelivery :: Delivery -> Product
+getProductDelivery (Delivery product _  ) = product
+
+getQuantityDelivery :: Delivery -> Double
+getQuantityDelivery (Delivery _ quantity  ) = quantity
+
+sumByQuantity :: (Eq product, Num quantity) => [(product, quantity)] -> [(product, quantity)]
+sumByQuantity [] = []
+sumByQuantity ((product,quantity):xs) = (product,quantity + sum vs) : sumByQuantity bs where
+    vs = map snd ks
+    (ks, bs) = partition ((product ==) . fst) xs
+
+
 
 -- Allocation of quantities of products to customers.
 --
